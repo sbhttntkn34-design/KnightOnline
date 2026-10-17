@@ -1,0 +1,37 @@
+name: KO 1298 Server Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build server
+        shell: pwsh
+        run: |
+          msbuild /m /p:Configuration=Release /p:Platform=Win32 Server.slnx
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload server files
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenKO-1298-Server
+          path: |
+            bin/Release-Win32/*.exe
+            bin/Release-Win32/*.dll
+          if-no-files-found: error
+          retention-days: 7
